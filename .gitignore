@@ -1,0 +1,102 @@
+########################################
+# OS-specific ignores
+########################################
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+########################################
+# C++ build artifacts
+########################################
+
+*.o
+*.obj
+*.gch
+*.pch
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+*.a
+*.lib
+*.tmp
+
+# Coverage files
+*.gcno
+*.gcda
+*.gcov
+
+########################################
+# CMake
+########################################
+
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build/
+build-*/
+cmake-build-*/
+
+# CLion generated files
+.idea/
+*.iml
+
+# Optional: Keep run configs and code style
+!.idea/runConfigurations/
+!.idea/codeStyles/
+
+########################################
+# Visual Studio
+########################################
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]in/
+[Oo]bj/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+
+# VS Code project files (optional)
+.vscode/
+
+# Visual Studio Code - generated files
+.history/
+
+########################################
+# SQLite database (if not tracked)
+########################################
+
+messages.db
+
+########################################
+# Logs and temporary
+########################################
+
+*.log
+*.tmp
+*.swp
+*.bak
+*.old
