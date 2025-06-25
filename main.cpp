@@ -8,23 +8,21 @@ const std::filesystem::path db_path = std::filesystem::current_path() / ".." / "
 
 void initDB()
 {
-    try {
-        auto normalized_path = std::filesystem::canonical(db_path);
-        std::cout << "Поиск файла бд в директории: " << normalized_path << std::endl;
+    auto normalized_path = std::filesystem::weakly_canonical(db_path);
+    std::cout << "Поиск файла бд. Путь: " << normalized_path << std::endl;
 
-        if (std::filesystem::exists(db_path)) {
-            std::cout << "Файл бд найден" << std::endl;
-        } else {
-            std::cout << "Файл бд не найден" << std::endl;
-        }
-        SQLite::Database db(db_path.string(), SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
-        std::cout << "База открыта успешно" << std::endl;
-        db.exec("CREATE TABLE IF NOT EXISTS user ("
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                "username TEXT NOT NULL UNIQUE)");
-    } catch (const std::exception& e) {
-        std::cerr << "Ошибка инициализации бд " << e.what() << std::endl;
+    if (!std::filesystem::exists(db_path))
+    {
+        throw std::runtime_error("файл бд не найден");
     }
+
+    std::cout << "Файл бд найден" << std::endl;
+
+    SQLite::Database db(db_path.string(), SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+    std::cout << "База открыта успешно" << std::endl;
+    db.exec("CREATE TABLE IF NOT EXISTS user ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "username TEXT NOT NULL UNIQUE)");
 }
 
 int main()
@@ -34,21 +32,26 @@ int main()
     crow::SimpleApp app;
 
     // GET /users
-    CROW_ROUTE(app, "/users").methods(crow::HTTPMethod::GET)([] {
+    CROW_ROUTE(app, "/users").methods(crow::HTTPMethod::GET)([]
+    {
         crow::json::wvalue result;
         std::vector<crow::json::wvalue> users;
 
-        try {
+        try
+        {
             SQLite::Database db(db_path.string(), SQLite::OPEN_READONLY);
             SQLite::Statement query(db, "SELECT id, username FROM user");
 
-            while (query.executeStep()) {
+            while (query.executeStep())
+            {
                 crow::json::wvalue user;
                 user["id"] = query.getColumn(0).getInt();
                 user["username"] = query.getColumn(1).getText();
                 users.push_back(user);
             }
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e)
+        {
             return crow::response(500, e.what());
         }
 
@@ -57,18 +60,23 @@ int main()
     });
 
     // POST /users
-    CROW_ROUTE(app, "/users").methods(crow::HTTPMethod::POST)([](const crow::request& req) {
+    CROW_ROUTE(app, "/users").methods(crow::HTTPMethod::POST)([](const crow::request& req)
+    {
         auto body = crow::json::load(req.body);
-        if (!body || !body.has("username")) {
+        if (!body || !body.has("username"))
+        {
             return crow::response(400, "Missing username");
         }
 
-        try {
+        try
+        {
             SQLite::Database db(db_path.string(), SQLite::OPEN_READWRITE);
             SQLite::Statement insert(db, "INSERT INTO user (username) VALUES (?)");
             insert.bind(1, body["username"].s());
             insert.exec();
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e)
+        {
             return crow::response(500, e.what());
         }
 
@@ -76,19 +84,24 @@ int main()
     });
 
     // PUT /users/<int>
-    CROW_ROUTE(app, "/users/<int>").methods(crow::HTTPMethod::PUT)([](const crow::request& req, int id) {
+    CROW_ROUTE(app, "/users/<int>").methods(crow::HTTPMethod::PUT)([](const crow::request& req, int id)
+    {
         auto body = crow::json::load(req.body);
-        if (!body || !body.has("username")) {
+        if (!body || !body.has("username"))
+        {
             return crow::response(400, "Missing username");
         }
 
-        try {
+        try
+        {
             SQLite::Database db(db_path.string(), SQLite::OPEN_READWRITE);
             SQLite::Statement update(db, "UPDATE user SET username = ? WHERE id = ?");
             update.bind(1, body["username"].s());
             update.bind(2, id);
             update.exec();
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e)
+        {
             return crow::response(500, e.what());
         }
 
@@ -96,13 +109,17 @@ int main()
     });
 
     // DELETE /users/<int>
-    CROW_ROUTE(app, "/users/<int>").methods(crow::HTTPMethod::DELETE)([](const crow::request& /*req*/, int id) {
-        try {
+    CROW_ROUTE(app, "/users/<int>").methods(crow::HTTPMethod::DELETE)([](const crow::request& /*req*/, int id)
+    {
+        try
+        {
             SQLite::Database db(db_path.string(), SQLite::OPEN_READWRITE);
             SQLite::Statement del(db, "DELETE FROM user WHERE id = ?");
             del.bind(1, id);
             del.exec();
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e)
+        {
             return crow::response(500, e.what());
         }
 
